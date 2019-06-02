@@ -106,10 +106,8 @@ class getAndPut(defaults, Threader, Queuer):
 
 def main():
 
+    workload = getAndPut()
     while True:
-        workload = getAndPut()
         workload.get_matching_keys()
         time.sleep(workload.get_key_from_glob("timeout"))
 
-
-"""TODO: Make sure it exits fast ! no wait to much, test in prod"""
