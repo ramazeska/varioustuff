@@ -6,6 +6,8 @@ import os
 from threader import Threader
 from queuer import Queuer
 import time
+from requests import exceptions as rexptions
+
 
 class defaults(configParser):
     def __init__(self):
@@ -42,19 +44,36 @@ class defaults(configParser):
 
 
     def _consul_setup_connect(self, host, scheme, port):
-        if type(host) is list:
-            for h in host:
-                c = consul.Consul(host=h, scheme=scheme, port=port)
-                c.connect(host=h, port=port, scheme=scheme)
+        try:
+            if type(host) is list:
+                for h in host:
+                    try:
+                        c = consul.Consul(host=h, scheme=scheme, port=port)
+                        c.connect(host=h, port=port, scheme=scheme)
+                        if self._check_consul_connect(c) is True:
+                            return c
+                    except rexptions.ConnectionError:
+                        pass
+
+            elif type(host) is str:
+                c = consul.Consul(host=host, scheme=scheme, port=port)
+                c.connect(host=host, port=port, scheme=scheme)
                 if self._check_consul_connect(c) is True:
                     return c
-        elif type(host) is str:
-            c = consul.Consul(host=host, scheme=scheme, port=port)
-            c.connect(host=host, port=port, scheme=scheme)
-            if self._check_consul_connect(c) is True:
-                return c
-        raise Exception('Failed to connect to {}://{}:{}'.format(scheme,host,port))
-
+            raise Exception('Failed to connect to {}://{}:{}'.format(scheme,host,port))
+        except rexptions.SSLError:
+            if type(host) is list:
+                for h in host:
+                    c = consul.Consul(host=h, scheme=scheme, port=port, verify=False)
+                    c.connect(host=h, port=port, scheme=scheme, verify=False)
+                    if self._check_consul_connect(c) is True:
+                        return c
+            elif type(host) is str:
+                c = consul.Consul(host=host, scheme=scheme, port=port, verify=False)
+                c.connect(host=host, port=port, scheme=scheme, verify=False)
+                if self._check_consul_connect(c) is True:
+                    return c
+            raise Exception('Failed to connect to {}://{}:{}'.format(scheme, host, port))
 
 class getAndPut(defaults, Threader, Queuer):
     def __init__(self):
