@@ -1,0 +1,39 @@
+{
+  "__Comment": "assuming that kv structure is A/dev/*, A/prod/* and we want to copy the */prod/* to another consul",
+  "globals": {
+    "timeout": 1800,
+    "MAX_THREADS": 10,
+    "consul": {
+      "scheme": "https",
+      "port": 8443
+    },
+
+    "kv_prefix": ".*/[P|p]rod/.*",
+    "general_read_token": "your read token hear for a src consul",
+    "__Comment": "root keys for consul, 1 in a line, see readme for example",
+    "prefix_file": "/tmp/prefixes"
+  },
+  "envs": {
+    "dev": {
+      "consulHost": "your target dev consul host",
+      "write_token": "your write token",
+      "__Comment": "for env where is no direct connection between src and tgt consul (FW or such) and there are GW proxies",
+      "proxy": {
+        "host": ["gw1", "gw2"],
+        "port": 8500,
+        "scheme": "http"
+      }
+
+    },
+    "prod": {
+      "consulHost": "your target prod consul host",
+      "write_token": "your write token",
+      "__Comment": "for env where is no direct connection between src and tgt consul (FW or such) and there are GW proxies",
+      "proxy": {
+        "host": ["gw1", "gw2"],
+        "port": 8500,
+        "scheme": "http"
+      }
+    }
+  }
+}
